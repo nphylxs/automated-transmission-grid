@@ -1,0 +1,30 @@
+{
+  "study": "stochastic N-1 dataset",
+  "generated_utc": "2026-10-07T02:36:25.329880+00:00",
+  "network": "pandapower.networks.case30()",
+  "solver": {
+    "function": "pandapower.runpp",
+    "enforce_q_lims": true
+  },
+  "thresholds": {
+    "min_v_pu": 0.95,
+    "max_v_pu": 1.05,
+    "max_loading_percent": 100.0
+  },
+  "versions": {
+    "pandapower": "3.5.5",
+    "pandas": "2.3.3",
+    "numpy": "2.4.6"
+  },
+  "files_sha256": {
+    "generate_dataset.csv": "0f12ae781e5f87876d752b2df5bf7247f1d3c1fd22cbd3f7f929fa176286f995"
+  },
+  "seed": 42,
+  "samples": 1000,
+  "load_scaling": "independent uniform [0.8, 1.2] per load",
+  "status_counts": {
+    "converged": 922,
+    "islanded": 78
+  },
+  "label": "violation = voltage limit breach or islanded/nonconverged case; thermal_violation is separate"
+}

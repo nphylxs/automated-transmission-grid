@@ -1,52 +1,30 @@
-import pandapower as pp
-import pandapower.networks as pn
-import pandas as pd
-import numpy as np
+"""Generate reproducible stochastic N-1 scenarios and retained study evidence."""
 
-n_samples = 1000
-data = []
+from __future__ import annotations
 
-net = pn.case30()
+import argparse
+from pathlib import Path
 
-for i in range(n_samples):
-    # multiplying p_mw by a random factor
-    random_scaling = np.random.uniform(0.8, 1.2, size=len(net.load))
-    net.load.scaling = random_scaling
+from grid_study import Limits, export_dataset
 
-    # random N-1 outage
-    random_line = np.random.choice(net.line.index)
-    net.line.at[random_line, "in_service"] = False
 
-    try:
-        pp.runpp(net, enforce_q_lims=True)
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--samples", type=int, default=1000)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--output", type=Path, default=Path("generate_dataset.csv"))
+    parser.add_argument("--evidence-dir", type=Path, default=Path("output/dataset"))
+    parser.add_argument("--min-v", type=float, default=0.95)
+    parser.add_argument("--max-v", type=float, default=1.05)
+    parser.add_argument("--max-loading", type=float, default=100.0)
+    args = parser.parse_args()
+    if args.samples < 1:
+        parser.error("--samples must be positive")
+    summary = export_dataset(args.samples, args.seed, args.output, args.evidence_dir,
+                             Limits(args.min_v, args.max_v, args.max_loading))
+    print(f"Wrote {len(summary)} scenarios to {args.output}")
+    print(f"Voltage/solvability flags: {int(summary.violation.sum())}; thermal flags: {int(summary.thermal_violation.sum())}")
 
-        # checking violations
-        v_max = net.res_bus.vm_pu.max()
-        v_min = net.res_bus.vm_pu.min()
-        has_violation = 1 if (v_max > 1.05 or v_min < 0.95) else 0
 
-        # dict to store the outcome
-        scenario_results = {
-            "outage_line": random_line,
-            "max_v_pu": v_max,
-            "min_v_pu": v_min,
-            "violation": has_violation,
-            "total_demand_mw": net.load.p_mw.sum()
-        }
-
-        # load values of each bus
-        for idx, load_val in enumerate(net.load.p_mw * net.load.scaling):
-            scenario_results[f"load_bus_{net.load.bus.iloc[idx]}"] = load_val
-
-        # adding generator setpoints
-        for idx, gen_v in enumerate(net.gen.vm_pu):
-            scenario_results[f"gen_{idx}_v_setpoint"] = gen_v
-            
-        data.append(scenario_results)
-
-    except:
-        pass
-
-    df = pd.DataFrame(data)
-    df.to_csv("generate_dataset.csv", index=False)
-
+if __name__ == "__main__":
+    main()

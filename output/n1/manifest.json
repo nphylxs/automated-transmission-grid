@@ -1,0 +1,30 @@
+{
+  "study": "deterministic N-1 line screen",
+  "generated_utc": "2026-10-07T02:41:09.010463+00:00",
+  "network": "pandapower.networks.case30()",
+  "solver": {
+    "function": "pandapower.runpp",
+    "enforce_q_lims": true
+  },
+  "thresholds": {
+    "min_v_pu": 0.95,
+    "max_v_pu": 1.05,
+    "max_loading_percent": 100.0
+  },
+  "versions": {
+    "pandapower": "3.5.5",
+    "pandas": "2.3.3",
+    "numpy": "2.4.6"
+  },
+  "files_sha256": {
+    "output/n1/contingencies.csv": "df3911e3efc667dc3fabd8b93792522491619c6e17c20ab87a0d69e69fcbdb15",
+    "output/n1/bus_results.csv": "e771d67933e15f5fe74198bafadf799ffe202cf7e68573d69ab773961180683d",
+    "output/n1/line_results.csv": "07bd81c6fc2c2b6ac263e3ec56fca25bdb124a98f8a4f75959793a47b508b650",
+    "output/n1/bus_inventory.csv": "88d79c2dba7712a3ef456d66190df5b09792dbf2cc32ba39a32b2780e3b12f38",
+    "output/n1/line_inventory.csv": "18485869a382cedf8e44b2eb33b837aa86ef3c64a703e8f2288937a96608d024",
+    "output/n1/topology.md": "0fa2191ec2c1d0016213aee0a81bb72d28ddb8243690932ba93fd4bd4d37ae4b"
+  },
+  "scenarios": 42,
+  "line_outages": 41,
+  "nonconverged_or_islanded": 3
+}

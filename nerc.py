@@ -1,30 +1,24 @@
-import pandapower as pp 
-import pandapower.networks as pn
+"""Run a documented N-1 planning screen for every IEEE 30-bus line."""
 
-# loading the IEEE 30-bus 
-network = pn.case30()
+from __future__ import annotations
 
-violations = []
+import argparse
+from pathlib import Path
 
-for i in network.line.index:
-    # trip one line
-    network.line.at[i, "in_service"] = False
+from grid_study import Limits, export_n1_study
 
-    try:
-        # trying to run the power flow
-        pp.runpp(network)
 
-        # checking if any of the buses violate NERC standards
-        v_max = network.res_bus.vm_pu.max()
-        v_min = network.res_bus.vm_pu.min()
-        
-        if v_max > 1.05 or v_min < 0.95:
-            violations.append(f"Line {i} failure causes voltage violation!")
-    
-    except pp.LoadflowNotConverged:
-        violations.append(f"Line {i} failure causes System Collapse (Non-convergence)!")
-    
-    # reset the tripped line
-    network.line.at[i, "in_service"] = True
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=Path("output/n1"))
+    parser.add_argument("--min-v", type=float, default=0.95)
+    parser.add_argument("--max-v", type=float, default=1.05)
+    parser.add_argument("--max-loading", type=float, default=100.0)
+    args = parser.parse_args()
+    summary = export_n1_study(args.output_dir, Limits(args.min_v, args.max_v, args.max_loading))
+    print(f"Wrote {len(summary)} line-contingency results to {args.output_dir}")
+    print(f"Voltage/solvability flags: {int(summary.violation.sum())}; thermal flags: {int(summary.thermal_violation.sum())}")
 
-print(f'Analysis complete. Found {len(violations)} critical contingencies.')
+
+if __name__ == "__main__":
+    main()
